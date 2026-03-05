@@ -78,29 +78,27 @@ const SignupPage = () => {
         privacy: formData.acceptTerms,
         travelTips: formData.newsletter,
       };
-     console.log("Signup payload:", payload);
-      const response = await signup(payload);
+      console.log("Signup payload:", payload);
+      await signup(payload);
 
-      localStorage.setItem("token", response.data.data.token);
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: response.data.data.userId,
-          fullName: response.data.data.fullName,
-          email: response.data.data.email,
-        }),
-      );
-
-      navigate("/dashboard");
+      alert("✅ Account created successfully! Please log in to continue.");
+      navigate("/login");
     } catch (error) {
       console.error("Signup error:", error);
       console.error("Response data:", error.response?.data);
       console.error("Error message:", error.message);
 
       const apiError = error.response?.data;
-      const errorMessage =
-        apiError?.message || error.message || "Signup failed";
+      let errorMessage = apiError?.message || error.message || "Signup failed";
+
+      // If there are detailed validation errors, display them
+      if (apiError?.error && Array.isArray(apiError.error)) {
+        const details = apiError.error
+          .map((err) => `${err.path || err.param}: ${err.msg}`)
+          .join("\n");
+        errorMessage += `\n\nDetails:\n${details}`;
+      }
+
       alert(`❌ ${errorMessage}`);
     } finally {
       setIsLoading(false);
@@ -118,123 +116,75 @@ const SignupPage = () => {
         <div className="image-section">
           <div className="image-overlay"></div>
           <div className="image-content">
-            <div className="app-brand">
-              <div className="compass-icon">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M16.24 7.76L14.12 14.12L7.76 16.24L9.88 9.88L16.24 7.76Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 12H12.01"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
+            <Link to="/" className="app-brand">
+              <div className="logo-img">
+                <img src="/logo/travel-remove.png" alt="Travel Logo" />
               </div>
               <span className="brand-name">Travel Diaries</span>
+            </Link>
+
+            <div className="image-text">
+              <h1 className="image-title">Where Earth Touches the Sky</h1>
+              <p className="image-description">
+                Every mountain peak holds a secret, and every valley tells a
+                story. Join our global circle of explorers and weave your own
+                narrative into the timeless tapestry of Nepal.
+              </p>
             </div>
-            <h1 className="image-title">Begin Your Nepal Adventure</h1>
-            <p className="image-description">
-              Join thousands of travelers sharing their stories from the
-              Himalayas to ancient valleys.
-            </p>
             <div className="location-tag">
-              <span className="location-icon">📍</span>
-              <span className="location-text">Mustang Valley, Nepal</span>
+              <span className="location-icon">🏔️</span>
+              <span className="location-text">Eternal Himalayas, Nepal</span>
             </div>
             <div className="benefits">
               <div className="benefit">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="benefit-icon"
-                >
-                  <path
-                    d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                <div className="benefit-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                  />
-                </svg>
-                <span>Personal travel journal</span>
+                  >
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </div>
+                <span>Preserve your soul's journey in digital ink</span>
               </div>
               <div className="benefit">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="benefit-icon"
-                >
-                  <path
-                    d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                <div className="benefit-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                  />
-                  <path
-                    d="M19.4 15C21.1 17.1 22 19.5 22 22M2 22C2 19.5 2.9 17.1 4.6 15M19.4 9C21.1 6.9 22 4.5 22 2M2 2C2 4.5 2.9 6.9 4.6 9M16 12C16 14.2 14.2 16 12 16C9.8 16 8 14.2 8 12C8 9.8 9.8 8 12 8C14.2 8 16 9.8 16 12Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span>Discover hidden destinations</span>
+                  >
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                </div>
+                <span>Navigate the uncharted paths of the Himalayas</span>
               </div>
               <div className="benefit">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="benefit-icon"
-                >
-                  <path
-                    d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
+                <div className="benefit-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                  />
-                  <path
-                    d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span>Connect with fellow travelers</span>
+                  >
+                    <path d="M17 21V19a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </div>
+                <span>Sync with a global tribe of kindred explorers</span>
               </div>
             </div>
           </div>
@@ -454,46 +404,40 @@ const SignupPage = () => {
 
               <div className="form-group">
                 <div className="checkbox-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="acceptTerms"
-                      checked={formData.acceptTerms}
-                      onChange={handleChange}
-                      disabled={isLoading}
-                    />
-                    <span className="checkbox-custom"></span>
-                    <span className="checkbox-text">
-                      I agree to the{" "}
-                      <a href="#" className="link">
-                        Terms of Service
-                      </a>{" "}
-                      and{" "}
-                      <a href="#" className="link">
-                        Privacy Policy
-                      </a>
-                    </span>
-                  </label>
+                  <input
+                    type="checkbox"
+                    name="acceptTerms"
+                    checked={formData.acceptTerms}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                  />
+                  <span className="checkbox-text">
+                    I agree to the{" "}
+                    <a href="#" className="link">
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a href="#" className="link">
+                      Privacy Policy
+                    </a>
+                  </span>
                   {errors.acceptTerms && (
                     <div className="error-message">{errors.acceptTerms}</div>
                   )}
                 </div>
 
                 <div className="checkbox-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="newsletter"
-                      checked={formData.newsletter}
-                      onChange={handleChange}
-                      disabled={isLoading}
-                    />
-                    <span className="checkbox-custom"></span>
-                    <span className="checkbox-text">
-                      Send me travel tips, destination updates, and community
-                      stories
-                    </span>
-                  </label>
+                  <input
+                    type="checkbox"
+                    name="newsletter"
+                    checked={formData.newsletter}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                  />
+                  <span className="checkbox-text">
+                    Send me travel tips, destination updates, and community
+                    stories
+                  </span>
                 </div>
               </div>
 

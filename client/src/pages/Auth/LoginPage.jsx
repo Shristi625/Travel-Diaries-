@@ -52,7 +52,7 @@ const LoginPage = () => {
           id: response.data.data.userId,
           fullName: response.data.data.fullName,
           email: response.data.data.email,
-        })
+        }),
       );
 
       navigate("/dashboard");
@@ -61,11 +61,18 @@ const LoginPage = () => {
       setPassword("");
       setRememberMe(false);
     } catch (error) {
-      showToast(
-        error.response?.data?.message ||
-          "Login failed. Please check your credentials.",
-        "error"
-      );
+      const apiError = error.response?.data;
+      let errorMessage =
+        apiError?.message || "Login failed. Please check your credentials.";
+
+      if (apiError?.error && Array.isArray(apiError.error)) {
+        const details = apiError.error
+          .map((err) => `${err.path || err.param}: ${err.msg}`)
+          .join("\n");
+        errorMessage += `\n\nDetails:\n${details}`;
+      }
+
+      showToast(errorMessage, "error");
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +86,7 @@ const LoginPage = () => {
     e.preventDefault();
     showToast(
       "Password reset instructions will be sent to your email.",
-      "info"
+      "info",
     );
   };
 
@@ -90,58 +97,37 @@ const LoginPage = () => {
         <div className="image-section">
           <div className="image-overlay"></div>
           <div className="image-content">
-            <div className="app-brand">
-              <div className="compass-icon">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M16.24 7.76L14.12 14.12L7.76 16.24L9.88 9.88L16.24 7.76Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 12H12.01"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
+            <Link to="/" className="app-brand">
+              <div className="logo-img">
+                <img src="/logo/travel-remove.png" alt="Travel Logo" />
               </div>
               <span className="brand-name">Travel Diaries</span>
+            </Link>
+            <div className="image-text">
+              <h1 className="image-title">Discover Nepal's Hidden Treasures</h1>
+              <p className="image-description">
+                From the high Himalayas to ancient sacred temples, capture and
+                relive every magical moment of your journey.
+              </p>
+              <div className="location-tag">
+                <span className="location-icon">📍</span>
+                <span className="location-text">
+                  Annapurna Base Camp, Nepal
+                </span>
+              </div>
             </div>
-            <h1 className="image-title">Discover Nepal's Hidden Treasures</h1>
-            <p className="image-description">
-              From the Himalayas to ancient temples, capture every moment of
-              your journey.
-            </p>
-            <div className="location-tag">
-              <span className="location-icon">📍</span>
-              <span className="location-text">Annapurna Base Camp, Nepal</span>
-            </div>
-            <div className="image-footer">
-              <div className="image-stats">
-                <div className="stat">
-                  <span className="stat-number">2500+</span>
-                  <span className="stat-label">Travel Stories</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-number">150+</span>
-                  <span className="stat-label">Destinations</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-number">24/7</span>
-                  <span className="stat-label">Community Support</span>
-                </div>
+            <div className="image-stats">
+              <div className="stat">
+                <span className="stat-number">5k+</span>
+                <span className="stat-label">Diaries</span>
+              </div>
+              <div className="stat">
+                <span className="stat-number">1k+</span>
+                <span className="stat-label">Explorers</span>
+              </div>
+              <div className="stat">
+                <span className="stat-number">100%</span>
+                <span className="stat-label">Authentic</span>
               </div>
             </div>
           </div>

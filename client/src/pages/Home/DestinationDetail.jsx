@@ -36,6 +36,22 @@ const DestinationDetail = () => {
               <span className="dest-hero__divider">•</span>
               <span>{destination.bestTime}</span>
             </div>
+            <div className="dest-hero__actions">
+              <button
+                className="dest-hero__booknow"
+                onClick={() =>
+                  navigate('/checkout', {
+                    state: {
+                      name: destination.name,
+                      price: destination.pricePerPerson,
+                      image: destination.image,
+                    },
+                  })
+                }
+              >
+                Book Now
+              </button>
+            </div>
           </div>
         </div>
       </section>

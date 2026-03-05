@@ -90,5 +90,15 @@ export const googleAuthController = async (req, res, next) => {
 
   cookie.setCookie(res, "token", token);
 
-  return res.redirect("http://localhost:3000/dashboard");
+  const userData = encodeURIComponent(
+    JSON.stringify({
+      id: user._id,
+      fullName: user.fullName || user.displayName,
+      email: user.email,
+    })
+  );
+
+  return res.redirect(
+    `${process.env.FRONTEND_URL || "http://localhost:5173"}/dashboard?token=${token}&user=${userData}`
+  );
 };

@@ -7,13 +7,15 @@ export const login = (data) => api.post("/api/v1/auth/login", data);
 export const logout = async () => {
   try {
     const response = await api.post("/api/v1/auth/logout");
-    // Clear authentication token
+    // Clear authentication token and user data
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     sessionStorage.removeItem("token");
     return response;
   } catch (error) {
-    // Still clear token even if API fails
+    // Still clear everything even if API fails
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     sessionStorage.removeItem("token");
     throw error;
   }

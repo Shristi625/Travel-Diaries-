@@ -21,6 +21,7 @@ export const validateTravelDiary = [
     .withMessage("Date is required")
     .isISO8601()
     .withMessage("Date must be a valid ISO 8601 date"),
+  body("isPublic").optional().isBoolean().withMessage('isPublic must be a boolean'),
 ];
 
 export const validateDiaryIdParam = [
@@ -44,4 +45,5 @@ export const validateUpdateTravelDiary = [
     .optional()
     .isISO8601()
     .withMessage("Date must be a valid ISO 8601 date"),
+  body("isPublic").optional().isBoolean().withMessage('isPublic must be a boolean'),
 ];

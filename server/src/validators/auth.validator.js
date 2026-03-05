@@ -3,7 +3,7 @@ import { body } from "express-validator";
 export const signUpValidator = [
   body("fullName").trim().notEmpty().withMessage("Full name is required"),
 
-  body("email").isEmail().withMessage("Enter a valid email"),
+  body("email").trim().isEmail().withMessage("Enter a valid email"),
 
   body("password")
     .isLength({ min: 6 })
@@ -31,7 +31,7 @@ export const signUpValidator = [
 ];
 
 export const loginValidator = [
-  body("email").isEmail().withMessage("Enter a valid email"),
+  body("email").trim().isEmail().withMessage("Enter a valid email"),
 
   body("password").notEmpty().withMessage("Password is required"),
 

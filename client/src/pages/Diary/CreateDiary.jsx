@@ -11,8 +11,8 @@ const CreateDiary = () => {
     date: "",
     content: "",
   });
-  const [coverImage, setCoverImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
@@ -24,15 +24,24 @@ const CreateDiary = () => {
   };
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCoverImage(file);
+    const files = Array.from(e.target.files);
+    
+    // Add new files to existing images
+    setImages((prev) => [...prev, ...files]);
+
+    // Create previews for new files
+    files.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setImagePreviews((prev) => [...prev, reader.result]);
       };
       reader.readAsDataURL(file);
-    }
+    });
+  };
+
+  const removeImage = (index) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handlePublish = async (e) => {
@@ -40,16 +49,23 @@ const CreateDiary = () => {
     setIsSubmitting(true);
 
     try {
-      // Create FormData to send file and data
+      if (images.length === 0) {
+        alert("Please upload at least one image");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Create FormData to send files and data
       const formData = new FormData();
       formData.append("title", diary.title);
       formData.append("location", diary.location);
-      formData.append("travelDate", diary.date); // Backend expects 'travelDate'
-      formData.append("story", diary.content); // Backend model expects 'story'
+      formData.append("travelDate", diary.date);
+      formData.append("story", diary.content);
 
-      if (coverImage) {
-        formData.append("coverImage", coverImage);
-      }
+      // Append all images
+      images.forEach((image) => {
+        formData.append("diaryImages", image);
+      });
 
       // Call the actual API
       const response = await createTravelDiary(formData);
@@ -70,7 +86,7 @@ const CreateDiary = () => {
   };
 
   const handleSaveDraft = () => {
-    console.log("Saved as draft:", { ...diary, coverImage });
+    console.log("Saved as draft:", { ...diary, images });
     alert("Draft saved");
   };
 
@@ -125,49 +141,59 @@ const CreateDiary = () => {
           {/* Cover Image Upload */}
           <section className="cover-section">
             <div className="cover-label">
-              <h3>Cover Image</h3>
-              <p className="label-hint">Sets the mood for your story</p>
+              <h3>Travel Photos</h3>
+              <p className="label-hint">Upload multiple images to set the mood for your story</p>
             </div>
 
             <div className="cover-upload">
-              {imagePreview ? (
-                <div className="cover-preview">
-                  <img
-                    src={imagePreview}
-                    alt="Cover preview"
-                    className="preview-image"
-                  />
-                  <div className="preview-overlay">
-                    <label className="upload-label">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="file-input"
-                      />
-                      Change Image
-                    </label>
-                    <button
-                      className="remove-image"
-                      onClick={() => {
-                        setCoverImage(null);
-                        setImagePreview(null);
-                      }}
-                    >
-                      Remove
-                    </button>
+              {imagePreviews.length > 0 ? (
+                <div className="image-gallery">
+                  <div className="gallery-grid">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="gallery-item">
+                        <img
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="gallery-image"
+                        />
+                        <div className="gallery-overlay">
+                          <button
+                            className="remove-image-btn"
+                            onClick={() => removeImage(index)}
+                            type="button"
+                          >
+                            ✕ Remove
+                          </button>
+                        </div>
+                        {index === 0 && <span className="cover-badge">Cover</span>}
+                      </div>
+                    ))}
                   </div>
+                  <label className="add-more-label">
+                    <div className="add-more-box">
+                      <div className="add-icon">+</div>
+                      <div className="add-text">Add more photos</div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
+                      className="file-input"
+                    />
+                  </label>
                 </div>
               ) : (
                 <label className="upload-area">
                   <div className="upload-icon">📷</div>
                   <div className="upload-text">
-                    <div className="upload-title">Upload cover photo</div>
-                    <div className="upload-hint">JPG, PNG up to 5MB</div>
+                    <div className="upload-title">Upload photos</div>
+                    <div className="upload-hint">Select multiple images (JPG, PNG up to 5MB each)</div>
                   </div>
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageUpload}
                     className="file-input"
                   />
@@ -278,7 +304,7 @@ Don't worry about perfection – just write."
               <button
                 className="primary-button"
                 onClick={handlePublish}
-                disabled={isSubmitting || !diary.title || !diary.content}
+                disabled={isSubmitting || !diary.title || !diary.content || images.length === 0}
                 type="button"
               >
                 {isSubmitting ? "Publishing..." : "Publish Diary"}

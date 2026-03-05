@@ -1,21 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "./Dashboard.css";
 import { logout } from "../../services/auth";
-import { getMyTravelDiaries } from "../../services/travel-diary";
+import { getMyTravelDiaries, deleteTravelDiary } from "../../services/travel-diary";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [recentEntries, setRecentEntries] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
+    setIsLoading(true);
     getMyTravelDiaries()
       .then((res) => {
-        console.log(res);
         setRecentEntries(res.data.data);
       })
       .catch((error) => {
         console.error("Failed to load travel diaries:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, []);
 
@@ -24,8 +29,9 @@ const Dashboard = () => {
   };
 
   const handleViewAll = () => {
-    // Navigate to all entries page
-    console.log("View all entries");
+    // Navigate to all entries page or just scroll down
+    const el = document.getElementById("private-collection");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleLogout = () => {
@@ -34,42 +40,84 @@ const Dashboard = () => {
     });
   };
 
+  const handleDeleteDiary = (e, entryId) => {
+    e.stopPropagation();
+    
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this diary? This action cannot be undone."
+    );
+    
+    if (confirmDelete) {
+      deleteTravelDiary(entryId)
+        .then(() => {
+          alert("Diary deleted successfully!");
+          // Refresh the list
+          setRecentEntries((prev) => prev.filter((entry) => entry._id !== entryId));
+        })
+        .catch((error) => {
+          console.error("Failed to delete diary:", error);
+          alert("Failed to delete diary. Please try again.");
+        });
+    }
+  };
+
   return (
     <div className="diary-dashboard">
-      {/* Same Navbar as Home Page */}
+      {/* Premium Navbar */}
       <nav className="dashboard-nav">
         <div className="nav-container">
-          <div className="nav-logo">
-            <span className="logo-icon"></span>
-            <span className="logo-text">TravelDiaries</span>
-          </div>
+          <Link to="/" className="nav-logo">
+            <div className="img">
+              <img
+                src="/logo/travel-logo-remove.png"
+                alt="Travel Diaries Logo"
+              />
+            </div>
+            <span className="logo-text">Travel Diaries</span>
+          </Link>
 
           <div className="nav-links">
-            <a href="/" className="nav-link">
+            <Link to="/home" className="nav-link">
               Home
-            </a>
-            <a href="/dashboard" className="nav-link active">
+            </Link>
+            <Link to="/dashboard" className="nav-link active">
               Dashboard
-            </a>
-            <a href="/explore" className="nav-link">
+            </Link>
+            <Link to="/explore" className="nav-link">
               Explore
-            </a>
+            </Link>
+            <Link to="/community/stories" className="nav-link">
+              Community Stories
+            </Link>
             <button className="nav-cta" onClick={handleNewEntry}>
-              Write
+              Write Now
             </button>
             <div className="profile-dropdown">
               <button className="profile-trigger">
-                <span className="profile-avatar">🧑‍🦰</span>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
               </button>
               <div className="dropdown-menu">
-                <a href="/profile" className="dropdown-item">
-                  Profile
-                </a>
-                <a href="/settings" className="dropdown-item">
-                  Settings
-                </a>
+                <Link to="/profile" className="dropdown-item">
+                  <span>👤</span> Profile
+                </Link>
+                <Link to="/settings" className="dropdown-item">
+                  <span>⚙️</span> Settings
+                </Link>
+                <div className="dropdown-divider"></div>
                 <button className="dropdown-item logout" onClick={handleLogout}>
-                  Logout
+                  <span>🚪</span> Logout
                 </button>
               </div>
             </div>
@@ -77,97 +125,142 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      {/* Main Content - Minimal & Clean */}
+      {/* Main Content */}
       <main className="dashboard-main">
         {/* Welcome Section */}
         <section className="welcome-section">
-          <h1 className="welcome-title">Welcome back, Explorer 👋</h1>
+          <h1 className="welcome-title">
+            Welcome back, {user.fullName?.split(" ")[0] || "Explorer"} 👋
+          </h1>
           <p className="welcome-subtitle">
-            Your next Himalayan memory is waiting to be written
+            Your Himalayan journey continues here. Capture a new memory today.
           </p>
         </section>
 
-        {/* Primary CTA - Most Important */}
+        {/* Primary CTA Card */}
         <section className="cta-section">
+          <div className="cta-glow"></div>
           <button className="write-button" onClick={handleNewEntry}>
             Start Writing Diary
           </button>
-          <p className="cta-hint">Continue your story wherever you left off</p>
+          <div className="cta-hint">
+            Continue your journey where you left off.
+          </div>
         </section>
 
-        {/* Recent Diary Entries */}
-        <section className="recent-entries">
+        {/* Entries Section */}
+        <section id="private-collection" className="recent-entries">
           <div className="section-header">
-            <h2 className="section-title">Your Travel Memories</h2>
+            <h2 className="section-title">Your Private Collection</h2>
             <button className="view-all-btn" onClick={handleViewAll}>
-              View All Entries →
+              View All <span>→</span>
             </button>
           </div>
 
           <div className="entries-grid">
-            {recentEntries.map((entry) => (
-              <article
-                key={entry.id}
-                className="entry-card"
-                onClick={() => console.log("Open entry", entry.id)}
-              >
-                <div
-                  className="entry-cover"
-                  style={{ backgroundImage: `url(${entry.coverImage})` }}
-                >
-                  <div className="cover-overlay"></div>
-                  <div className="entry-number">#{entry.id}</div>
-                </div>
-                <div className="entry-content">
-                  <h3 className="entry-title">{entry.title}</h3>
-                  <div className="entry-meta">
-                    <span className="location">📍 {entry.location}</span>
-                    <span className="date">📅 {entry.date}</span>
-                  </div>
-                  <p className="entry-excerpt">{entry.excerpt}</p>
-                  <div className="entry-actions">
-                    <button className="read-btn">Read Full Story →</button>
+            {isLoading ? (
+              // Skeleton Loaders
+              [1, 2, 3].map((i) => (
+                <div key={i} className="entry-card skeleton-card">
+                  <div className="entry-cover skeleton"></div>
+                  <div className="entry-content">
+                    <div className="skeleton title-skeleton"></div>
+                    <div className="skeleton meta-skeleton"></div>
+                    <div className="skeleton text-skeleton"></div>
+                    <div className="skeleton text-skeleton"></div>
                   </div>
                 </div>
-              </article>
-            ))}
-          </div>
+              ))
+            ) : recentEntries.length > 0 ? (
+              recentEntries.map((entry) => {
+                const entryId = entry._id || entry.id;
+                const displayId = entryId
+                  ? entryId.toString().slice(-4).toUpperCase()
+                  : "xxxx";
+                const displayDate = entry.createdAt || entry.date || new Date();
 
-          {/* Pagination for Many Entries */}
-          <div className="entries-pagination">
-            <button className="pagination-btn active">1</button>
-            <button className="pagination-btn">2</button>
-            <button className="pagination-btn">3</button>
-            <span className="pagination-dots">...</span>
-            <button className="pagination-btn">15</button>
-            <button className="pagination-next">Next →</button>
+                return (
+                  <article
+                    key={entryId}
+                    className="entry-card"
+                    onClick={() => navigate(`/story/${entryId}`)}
+                  >
+                    <div
+                      className="entry-cover"
+                      style={{
+                        backgroundImage: `url(${entry.coverImage || "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80"})`,
+                      }}
+                    >
+                      <div className="cover-overlay"></div>
+                      <div className="entry-number">MEMOIR #{displayId}</div>
+                      <button
+                        className="delete-btn"
+                        onClick={(e) => handleDeleteDiary(e, entryId)}
+                        title="Delete diary"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                    <div className="entry-content">
+                      <h3 className="entry-title">
+                        {entry.title || "Untitled Adventure"}
+                      </h3>
+                      <div className="entry-meta">
+                        <span className="location">
+                          📍 {entry.location || "Unknown Location"}
+                        </span>
+                        <span className="date">
+                          📅 {new Date(displayDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="entry-excerpt">
+                        {entry.excerpt ||
+                          entry.story?.slice(0, 100) +
+                            (entry.story?.length > 100 ? "..." : "") ||
+                          "No content provided..."}
+                      </p>
+                      <button className="read-btn">Read Entry</button>
+                    </div>
+                  </article>
+                );
+              })
+            ) : (
+              <div className="empty-state-container">
+                <div className="empty-state-icon">✍️</div>
+                <h3>No stories yet</h3>
+                <p>Your journey in Nepal is waiting to be written.</p>
+                <button className="btn-primary" onClick={handleNewEntry}>
+                  Write First Entry
+                </button>
+              </div>
+            )}
           </div>
         </section>
 
-        {/* Stats - Only Minimal, Like a Diary Would Have */}
+        {/* Dynamic Stats Panel */}
         <section className="diary-stats">
           <div className="stats-card">
             <div className="stat-item">
               <span className="stat-number">{recentEntries.length}</span>
-              <span className="stat-label">Diary Entries</span>
+              <span className="stat-label">Diaries Written</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">8</span>
-              <span className="stat-label">Nepal Regions</span>
+              <span className="stat-number">12</span>
+              <span className="stat-label">Destinations Visited</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">47</span>
-              <span className="stat-label">Days in Nepal</span>
+              <span className="stat-number">100%</span>
+              <span className="stat-label">Adventure Life</span>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Simple Footer */}
+      {/* Premium Footer */}
       <footer className="dashboard-footer">
-        <p>NepalDiaries · Documenting Himalayan journeys since 2024</p>
+        <p>Travel Diaries Nepal · Documenting Himalayan journeys since 2024</p>
         <p className="footer-note">
-          Every mountain has a story. Every story belongs here.
+          "Every mountain has a story. Every story belongs here."
         </p>
       </footer>
     </div>

@@ -7,16 +7,20 @@ import {
 
 export const createDiaryController = async (req, res, next) => {
   try {
-    const { title, location, travelDate, story } = req.body;
+    const { title, location, travelDate, story, isPublic } = req.body;
     
-    if (!req.file) {
-      return next(new APIError(400, "Cover image is required"));
+    if (!req.files || req.files.length === 0) {
+      return next(new APIError(400, "At least one image is required"));
     }
 
-    const uploadImage = await uploadToCloudinary(
-      req.file.buffer,
-      "travel-diaries"
+    // Upload all images to Cloudinary
+    const uploadedImages = await Promise.all(
+      req.files.map((file) =>
+        uploadToCloudinary(file.buffer, "travel-diaries")
+      )
     );
+
+    const imageUrls = uploadedImages.map((img) => img.url);
 
     const date = new Date(travelDate);
     if (isNaN(date.getTime())) {
@@ -28,7 +32,9 @@ export const createDiaryController = async (req, res, next) => {
       location,
       travelDate: date,
       story,
-      coverImage: uploadImage.url,
+      coverImage: imageUrls[0], // Set first image as cover
+      images: imageUrls,
+      isPublic: Boolean(isPublic),
     });
 
     successResponse(res, 201, "Diary created successfully", newDiary);
@@ -54,7 +60,7 @@ export const getMyDiariesController = async (req, res, next) => {
 
 export const getDiaryByIdController = async (req, res, next) => {
   try {
-    const diary = await TravelDiary.findById(req.params.id);
+    const diary = await TravelDiary.findById(req.params.id).populate({ path: 'userId', select: 'displayName avatar' });
     if (!diary) return next(new APIError(404, "Diary not found"));
 
     if (
@@ -80,7 +86,10 @@ export const updateDiaryController = async (req, res, next) => {
     )
       return next(new APIError(403, "Access denied"));
 
+    // allow updating isPublic explicitly
+    const { isPublic } = req.body;
     Object.assign(diary, req.body);
+    if (typeof isPublic !== 'undefined') diary.isPublic = Boolean(isPublic);
     await diary.save();
 
     successResponse(res, 200, "Diary updated successfully", diary);
@@ -100,8 +109,17 @@ export const deleteDiaryController = async (req, res, next) => {
     )
       return next(new APIError(403, "Access denied"));
 
-    await diary.remove();
+    await TravelDiary.deleteOne({ _id: req.params.id });
     successResponse(res, 200, "Diary deleted successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getPublicDiariesController = async (req, res, next) => {
+  try {
+    const diaries = await TravelDiary.find({ isPublic: true }).populate({ path: 'userId', select: 'displayName avatar' }).sort({ createdAt: -1 });
+    successResponse(res, 200, 'Public diaries fetched successfully', diaries);
   } catch (err) {
     next(err);
   }

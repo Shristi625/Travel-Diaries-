@@ -15,7 +15,7 @@ import {
   validateUpdateTravelDiary,
 } from "../validators/travel-diary.validator.js";
 import validateRequest from "../middlewares/validate-request.middleware.js";
-import { uploadSingle } from "../middlewares/multer.middleware.js";
+import { uploadSingle, uploadArray } from "../middlewares/multer.middleware.js";
 
 const router = Router();
 
@@ -41,7 +41,7 @@ router
   .post(
     apiRateLimiter,
     authenticate(["user", "admin"]),
-    uploadSingle("coverImage"),
+    uploadArray("diaryImages", 10),
     validateTravelDiary,
     validateRequest,
     asyncHandler(createDiaryController)

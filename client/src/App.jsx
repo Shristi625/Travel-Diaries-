@@ -19,6 +19,10 @@ import GroupTripPage from "./pages/GroupTrip/GroupTripPage";
 import FoodPage from "./pages/Food/FoodPage";
 import Chatbot from "./pages/Chatbot/Chatbot";
 import ExplorePage from "./pages/Explore/ExplorePage";
+import LandingPage from "./pages/Landing/LandingPage";
+import CommunityPage from "./pages/Community/CommunityPage";
+import CommunityStoriesPage from "./pages/Community/CommunityStoriesPage";
+import Checkout from "./pages/Checkout/Checkout";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -41,30 +45,43 @@ const PublicRoute = ({ children }) => {
 };
 
 function App() {
+  React.useEffect(() => {
+    // Check if we just arrived from a Google Login redirect
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const userData = params.get("user");
+
+    if (token && userData) {
+      try {
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", userData); // userData is already JSON stringified from server
+
+        // Clean up the URL so the token isn't visible in the address bar
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+
+        // Refresh to make sure all components see the logged in state
+        window.location.reload();
+      } catch (err) {
+        console.error("Error saving auth data:", err);
+      }
+    }
+  }, []);
+
   return (
     <Router>
       <Routes>
         {/* Public Routes - User cannot access if already logged in */}
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <LoginPage />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <PublicRoute>
-              <SignupPage />
-            </PublicRoute>
-          }
-        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
 
-        {/* Protected Routes - User must be logged in */}
+        {/* Main Routes */}
+        <Route path="/" element={<LandingPage />} />
         <Route
-          path="/"
+          path="/home"
           element={
             <ProtectedRoute>
               <HomePage />
@@ -143,11 +160,21 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/community" element={<CommunityPage />} />
+        <Route path="/community/stories" element={<CommunityStoriesPage />} />
         <Route
           path="/explore"
           element={
             <ProtectedRoute>
               <ExplorePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
             </ProtectedRoute>
           }
         />

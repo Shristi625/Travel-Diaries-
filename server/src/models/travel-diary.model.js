@@ -22,9 +22,16 @@ const travelDiarySchema = new mongoose.Schema(
     coverImage: {
       type: String,
     },
+    images: [{
+      type: String,
+    }],
     story: {
       type: String,
       required: true,
+    },
+    isPublic: {
+      type: Boolean,
+      default: false,
     },
   },
   {
