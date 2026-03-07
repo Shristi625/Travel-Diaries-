@@ -23,6 +23,7 @@ import LandingPage from "./pages/Landing/LandingPage";
 import CommunityPage from "./pages/Community/CommunityPage";
 import CommunityStoriesPage from "./pages/Community/CommunityStoriesPage";
 import Checkout from "./pages/Checkout/Checkout";
+import QuotesPage from "./pages/Quotes/QuotesPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -129,6 +130,14 @@ function App() {
           }
         />
         <Route
+          path="/edit/:id"
+          element={
+            <ProtectedRoute>
+              <CreateDiary />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/settings"
           element={
             <ProtectedRoute>
@@ -178,6 +187,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/quotes" element={<QuotesPage />} />
       </Routes>
       <Chatbot />
     </Router>

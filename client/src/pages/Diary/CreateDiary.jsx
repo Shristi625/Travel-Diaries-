@@ -1,10 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import "./CreateDiary.css";
-import { createTravelDiary } from "../../services/travel-diary";
+import { createTravelDiary, getTravelDiaryById, updateTravelDiary } from "../../services/travel-diary";
 
 const CreateDiary = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
+  
   const [diary, setDiary] = useState({
     title: "",
     location: "",
@@ -14,6 +17,37 @@ const CreateDiary = () => {
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(isEditMode);
+
+  useEffect(() => {
+    if (isEditMode) {
+      setIsLoading(true);
+      getTravelDiaryById(id)
+        .then((res) => {
+          const data = res.data.data;
+          setDiary({
+            title: data.title,
+            location: data.location,
+            date: data.travelDate ? new Date(data.travelDate).toISOString().split('T')[0] : "",
+            content: data.story,
+          });
+          // For images, we show existing ones as previews but they aren't File objects
+          if (data.images && data.images.length > 0) {
+            setImagePreviews(data.images);
+            // We set existing images if the backend supports keeping them, 
+            // but usually we send new ones. 
+            // For now let's keep it simple.
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch diary for edit:", err);
+          alert("Failed to load diary data");
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [id, isEditMode]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -44,55 +78,76 @@ const CreateDiary = () => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handlePublish = async (e) => {
-    e.preventDefault();
+  const submitDiary = async (status = "published") => {
     setIsSubmitting(true);
-
     try {
-      if (images.length === 0) {
-        alert("Please upload at least one image");
-        setIsSubmitting(false);
-        return;
-      }
-
       // Create FormData to send files and data
       const formData = new FormData();
-      formData.append("title", diary.title);
+      formData.append("title", diary.title || "Untitled Draft");
       formData.append("location", diary.location);
       formData.append("travelDate", diary.date);
       formData.append("story", diary.content);
+      formData.append("status", status);
+      formData.append("isPublic", "false"); // Drafts and first-saves are private by default
 
-      // Append all images
+      // Append all new images if any
       images.forEach((image) => {
         formData.append("diaryImages", image);
       });
 
-      // Call the actual API
-      const response = await createTravelDiary(formData);
+      let response;
+      if (isEditMode) {
+        response = await updateTravelDiary(id, formData);
+        alert(status === "draft" ? "Draft updated!" : "Diary updated successfully!");
+      } else {
+        if (status === "published" && images.length === 0) {
+          alert("Please upload at least one image to publish.");
+          setIsSubmitting(false);
+          return;
+        }
+        response = await createTravelDiary(formData);
+        alert(status === "draft" ? "Draft saved!" : "Diary published successfully!");
+      }
 
-      console.log("Diary published:", response.data);
-      alert("Diary published successfully!");
+      console.log("Diary processed:", response.data);
       navigate("/dashboard");
     } catch (error) {
-      console.error("Failed to publish diary:", error);
-      console.error("Error response:", error.response?.data);
+      console.error("Failed to process diary:", error);
       alert(
         error.response?.data?.message ||
-          "Failed to publish diary. Please try again.",
+          "Failed to process diary. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleSaveDraft = () => {
-    console.log("Saved as draft:", { ...diary, images });
-    alert("Draft saved");
+  const handlePublish = (e) => {
+    e.preventDefault();
+    if (!diary.title || !diary.content) {
+      alert("Please enter a title and some story content before publishing.");
+      return;
+    }
+    submitDiary("published");
+  };
+
+  const handleSaveDraft = (e) => {
+    e.preventDefault();
+    submitDiary("draft");
   };
 
   const handleBack = () => {
     navigate("/dashboard");
   };
+
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="loader"></div>
+        <p>Loading diary details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="create-diary">
@@ -114,6 +169,9 @@ const CreateDiary = () => {
             <a href="/explore" className="nav-link">
               Explore
             </a>
+            <a href="/quotes" className="nav-link">
+              Quotes
+            </a>
             <button className="nav-cta active">Write</button>
             <div className="profile-dropdown">
               <button className="profile-trigger">
@@ -132,9 +190,9 @@ const CreateDiary = () => {
             <button className="back-button" onClick={handleBack}>
               ← Back
             </button>
-            <h1 className="page-title">Write a New Travel Diary</h1>
+            <h1 className="page-title">{isEditMode ? "Edit Your Travel Diary" : "Write a New Travel Diary"}</h1>
             <p className="page-subtitle">
-              Capture your journey while it's still fresh.
+              {isEditMode ? "Refine your memories and share them with the world." : "Capture your journey while it's still fresh."}
             </p>
           </header>
 
@@ -297,17 +355,18 @@ Don't worry about perfection – just write."
               <button
                 className="secondary-button"
                 onClick={handleSaveDraft}
+                disabled={isSubmitting}
                 type="button"
               >
-                Save Draft
+                {isSubmitting ? "Saving..." : "Save Draft"}
               </button>
               <button
                 className="primary-button"
                 onClick={handlePublish}
-                disabled={isSubmitting || !diary.title || !diary.content || images.length === 0}
+                disabled={isSubmitting || !diary.title || !diary.content}
                 type="button"
               >
-                {isSubmitting ? "Publishing..." : "Publish Diary"}
+                {isSubmitting ? "Processing..." : (isEditMode ? "Save Changes" : "Publish Diary")}
               </button>
             </div>
             <p className="action-hint">

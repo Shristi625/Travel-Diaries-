@@ -86,6 +86,9 @@ const Dashboard = () => {
             <Link to="/explore" className="nav-link">
               Explore
             </Link>
+            <Link to="/quotes" className="nav-link">
+              Quotes
+            </Link>
             <Link to="/community/stories" className="nav-link">
               Community Stories
             </Link>
@@ -183,7 +186,7 @@ const Dashboard = () => {
                   <article
                     key={entryId}
                     className="entry-card"
-                    onClick={() => navigate(`/story/${entryId}`)}
+                    onClick={() => entry.status === "draft" ? navigate(`/edit/${entryId}`) : navigate(`/diary/${entryId}`)}
                   >
                     <div
                       className="entry-cover"
@@ -193,6 +196,9 @@ const Dashboard = () => {
                     >
                       <div className="cover-overlay"></div>
                       <div className="entry-number">MEMOIR #{displayId}</div>
+                      {entry.status === "draft" && (
+                        <div className="entry-status-badge">DRAFT</div>
+                      )}
                       <button
                         className="delete-btn"
                         onClick={(e) => handleDeleteDiary(e, entryId)}
@@ -219,7 +225,9 @@ const Dashboard = () => {
                             (entry.story?.length > 100 ? "..." : "") ||
                           "No content provided..."}
                       </p>
-                      <button className="read-btn">Read Entry</button>
+                      <button className="read-btn">
+                        {entry.status === "draft" ? "Continue Writing" : "Read Entry"}
+                      </button>
                     </div>
                   </article>
                 );

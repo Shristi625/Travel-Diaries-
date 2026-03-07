@@ -100,7 +100,7 @@ const PublicMoments = () => {
                   <div className="card-body">
                     <div className="card-meta">
                       <span className="card-author">
-                        {e.author?.username || e.author || "Unknown"}
+                        {typeof e.author === 'object' ? (e.author?.username || "Unknown") : (e.author || "Unknown")}
                       </span>
                       <span className="card-date">
                         {e.createdAt

@@ -88,13 +88,13 @@ img {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-.nav-links {
+.dashboard-nav .nav-links {
   display: flex;
   align-items: center;
   gap: 2rem;
 }
 
-.nav-link {
+.dashboard-nav .nav-link {
   text-decoration: none;
   color: var(--slate-600);
   font-weight: 600;
@@ -105,7 +105,7 @@ img {
   position: relative;
 }
 
-.nav-link::after {
+.dashboard-nav .nav-link::after {
   content: "";
   position: absolute;
   bottom: 0;
@@ -117,21 +117,21 @@ img {
   transform: translateX(-50%);
 }
 
-.nav-link:hover {
+.dashboard-nav .nav-link:hover {
   color: var(--primary-blue);
 }
 
-.nav-link:hover::after,
-.nav-link.active::after {
+.dashboard-nav .nav-link:hover::after,
+.dashboard-nav .nav-link.active::after {
   width: 15px;
 }
 
-.nav-link.active {
+.dashboard-nav .nav-link.active {
   color: var(--primary-blue);
   background: rgba(59, 130, 246, 0.05);
 }
 
-.nav-cta {
+.dashboard-nav .nav-cta {
   background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
   color: white;
   border: none;
@@ -451,6 +451,21 @@ img {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.entry-status-badge {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: #f59e0b; /* Amber 500 */
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+  z-index: 2;
+  letter-spacing: 0.05em;
 }
 
 .delete-btn {

@@ -20,7 +20,13 @@ export const createStory = async (storyFormData) => {
 };
 
 export const updateStory = async (id, story) => {
-  const res = await axios.put(`${API_URL}/${id}`, story);
+  // If story is a FormData (contains file) we need multipart headers,
+  // otherwise a plain object will be sent as JSON.
+  const config = {};
+  if (story instanceof FormData) {
+    config.headers = { "Content-Type": "multipart/form-data" };
+  }
+  const res = await axios.put(`${API_URL}/${id}`, story, config);
   return res.data;
 };
 

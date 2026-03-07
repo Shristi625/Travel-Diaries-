@@ -33,6 +33,11 @@ const travelDiarySchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    status: {
+      type: String,
+      enum: ["draft", "published"],
+      default: "published",
+    },
   },
   {
     timestamps: true,

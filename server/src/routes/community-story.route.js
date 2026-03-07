@@ -39,10 +39,11 @@ router.get("/", getStories);
 // Get a single story by ID
 router.get("/:id", getStoryById);
 
-// Update a story (auth required)
+// Update a story (auth required) — support optional image upload
 router.put(
   "/:id",
   authenticate(),
+  uploadSingle("image"), // allow clients to send a new image file
   updateStoryValidator,
   validateRequest,
   updateStory,

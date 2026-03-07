@@ -182,10 +182,13 @@ const CommunityStoriesPage = () => {
             ) : (
               stories.map((story) => {
                 const user = getCurrentUser();
-                const isAuthor =
-                  user &&
-                  story.author &&
-                  (story.author._id === user._id || story.author === user._id);
+                // Get the author ID - could be an object with _id or a string
+                const authorId = story.author?._id || story.author;
+                const userId = user?._id || user?.id;
+                
+                // Delete and edit buttons only show if user is the author
+                const isAuthor = userId && authorId && authorId.toString() === userId.toString();
+                
                 return (
                   <StoryCard
                     key={story._id}

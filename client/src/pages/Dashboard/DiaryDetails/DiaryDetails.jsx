@@ -15,6 +15,7 @@ import Sailung from "./Sailung";
 import Sarangkot from "./Sarangkot";
 import Shivapuri from "./Shivapuri";
 import Tansen from "./Tansen";
+import UserDiaryDetail from "./UserDiaryDetail";
 
 const DiaryDetails = () => {
   const { id } = useParams();
@@ -38,22 +39,13 @@ const DiaryDetails = () => {
     tansen: <Tansen />,
   };
 
-  // Check if diary entry exists
-  if (diaryMap[id?.toLowerCase()]) {
-    return diaryMap[id?.toLowerCase()];
+  // Check if static diary entry exists
+  if (id && diaryMap[id.toLowerCase()]) {
+    return diaryMap[id.toLowerCase()];
   }
 
-  return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <h2>Diary entry not found. Coming soon! 📝</h2>
-    </div>
-  );
+  // Fallback to dynamic user diary
+  return <UserDiaryDetail />;
 };
 
 export default DiaryDetails;

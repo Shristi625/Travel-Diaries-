@@ -81,8 +81,20 @@ export const updateStory = asyncHandler(async (req, res) => {
   if (story.author.toString() !== req.user._id.toString()) {
     return res.status(403).json({ message: "Not authorized" });
   }
+
+  // If a new file was uploaded, send it to Cloudinary and update image URL
+  if (req.file) {
+    const uploadResult = await uploadToCloudinary(
+      req.file.buffer,
+      "community-stories",
+    );
+    story.image = uploadResult.url;
+  } else if (image !== undefined) {
+    // allow clients to provide a direct URL (rarely used)
+    story.image = image;
+  }
+
   if (content !== undefined) story.content = content;
-  if (image !== undefined) story.image = image;
   await story.save();
   res.json(story);
 });

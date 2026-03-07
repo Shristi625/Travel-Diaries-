@@ -49,7 +49,7 @@ const LoginPage = () => {
       localStorage.setItem(
         "user",
         JSON.stringify({
-          id: response.data.data.userId,
+          _id: response.data.data._id,
           fullName: response.data.data.fullName,
           email: response.data.data.email,
         }),

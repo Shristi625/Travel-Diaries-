@@ -83,7 +83,7 @@ const Nagarkot = () => {
   ];
 
   return (
-    <div className="nagarkot-diary">
+    <div className="diary-page-wrapper">
       {/* Navigation */}
       <nav className="diary-navbar">
         <div className="navbar-content">

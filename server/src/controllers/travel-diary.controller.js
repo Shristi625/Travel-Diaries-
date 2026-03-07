@@ -7,10 +7,13 @@ import {
 
 export const createDiaryController = async (req, res, next) => {
   try {
-    const { title, location, travelDate, story, isPublic } = req.body;
+    const { title, location, travelDate, story, isPublic, status } = req.body;
     
-    if (!req.files || req.files.length === 0) {
-      return next(new APIError(400, "At least one image is required"));
+    // For drafts, we can relax requirements. For published, we keep them.
+    const isDraft = status === "draft";
+    
+    if (!isDraft && (!req.files || req.files.length === 0)) {
+      return next(new APIError(400, "At least one image is required for publishing"));
     }
 
     // Upload all images to Cloudinary
@@ -30,11 +33,12 @@ export const createDiaryController = async (req, res, next) => {
       userId: req.user.userId,
       title,
       location,
-      travelDate: date,
+      travelDate: travelDate ? date : undefined,
       story,
-      coverImage: imageUrls[0], // Set first image as cover
+      coverImage: imageUrls.length > 0 ? imageUrls[0] : undefined,
       images: imageUrls,
       isPublic: Boolean(isPublic),
+      status: status || "published",
     });
 
     successResponse(res, 201, "Diary created successfully", newDiary);
@@ -63,11 +67,15 @@ export const getDiaryByIdController = async (req, res, next) => {
     const diary = await TravelDiary.findById(req.params.id).populate({ path: 'userId', select: 'displayName avatar' });
     if (!diary) return next(new APIError(404, "Diary not found"));
 
-    if (
-      req.user.role !== "admin" &&
-      diary.userId.toString() !== req.user.userId
-    )
+    // Check if user is owner, admin, or if the diary is public
+    const ownerId = diary.userId._id ? diary.userId._id.toString() : diary.userId.toString();
+    const isOwner = ownerId === req.user.userId;
+    const isAdmin = req.user.role === "admin";
+    const isPublic = diary.isPublic === true;
+
+    if (!isOwner && !isAdmin && !isPublic) {
       return next(new APIError(403, "Access denied"));
+    }
 
     successResponse(res, 200, "Diary fetched successfully", diary);
   } catch (err) {

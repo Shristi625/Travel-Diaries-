@@ -4,6 +4,7 @@ import "./LandingPage.css";
 import PublicMoments from "../../components/PublicMoments/PublicMoments";
 import DestinationModal from "../../components/DestinationModal/DestinationModal";
 import { destinationsData } from "../../data/destinations";
+import TravelTips from "../../components/TravelTips/TravelTips";
 
 const LandingPage = () => {
   const [selected, setSelected] = useState(null);
@@ -42,6 +43,9 @@ const LandingPage = () => {
             <span>Travel Diaries Nepal</span>
           </Link>
           <div className="nav-buttons">
+            <Link to="/signup" className="btn btn-outline">
+              Inspiration
+            </Link>
             <button
               className="btn btn-outline"
               onClick={() => {
@@ -207,6 +211,9 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Travel Tips Section */}
+      <TravelTips />
 
       {/* How It Works Section */}
       <section className="how-it-works">

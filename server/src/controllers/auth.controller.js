@@ -32,7 +32,7 @@ export const signUpController = async (req, res, next) => {
   cookie.setCookie(res, "token", token);
 
   successResponse(res, 201, "User registered successfully", {
-    userId: newUser._id,
+    _id: newUser._id,
     email: newUser.email,
     fullName: newUser.fullName,
     token,
@@ -62,7 +62,7 @@ export const loginController = async (req, res, next) => {
   cookie.setCookie(res, "token", token);
 
   successResponse(res, 200, "Login successful", {
-    userId: user._id,
+    _id: user._id,
     email: user.email,
     fullName: user.fullName,
     token,
@@ -92,7 +92,7 @@ export const googleAuthController = async (req, res, next) => {
 
   const userData = encodeURIComponent(
     JSON.stringify({
-      id: user._id,
+      _id: user._id,
       fullName: user.fullName || user.displayName,
       email: user.email,
     })

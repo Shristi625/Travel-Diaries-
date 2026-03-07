@@ -8,6 +8,7 @@ import userRoute from "./user.route.js";
 import foodRoute from "./food.route.js";
 import chatRoute from "./chat.route.js";
 import communityStoryRoute from "./community-story.route.js";
+import quoteRoute from "./quote.route.js";
 
 const router = Router();
 
@@ -44,6 +45,7 @@ router.use("/api/v1/users", userRoute);
 router.use("/api/v1/foods", foodRoute);
 router.use("/api/v1/chat", chatRoute);
 router.use("/api/v1/community-stories", communityStoryRoute);
+router.use("/api/v1/quotes", quoteRoute);
 
 router.use((req, res, next) => {
   res.status(404).json({

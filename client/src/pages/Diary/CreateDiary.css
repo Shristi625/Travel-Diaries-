@@ -47,13 +47,13 @@
   letter-spacing: -0.5px;
 }
 
-.nav-links {
+.diary-nav .nav-links {
   display: flex;
   align-items: center;
   gap: 2.5rem;
 }
 
-.nav-link {
+.diary-nav .nav-link {
   color: #5d6d7e;
   text-decoration: none;
   font-size: 1rem;
@@ -62,11 +62,11 @@
   padding: 0.5rem 0;
 }
 
-.nav-link:hover {
+.diary-nav .nav-link:hover {
   color: #2c3e50;
 }
 
-.nav-cta {
+.diary-nav .nav-cta {
   background: #3498db;
   color: white;
   border: none;
@@ -78,11 +78,11 @@
   transition: all 0.2s ease;
 }
 
-.nav-cta:hover {
+.diary-nav .nav-cta:hover {
   background: #2980b9;
 }
 
-.nav-cta.active {
+.diary-nav .nav-cta.active {
   background: #2c3e50;
 }
 
